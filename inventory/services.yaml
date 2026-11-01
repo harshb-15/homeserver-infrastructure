@@ -1,0 +1,93 @@
+schema_version: 1
+publication_status: work-in-progress
+deployment_enabled: true
+
+access_classes:
+  public_via_vps: "LAN and Tailscale, plus authenticated VPS WireGuard peer"
+  private: "LAN and Tailscale only"
+  tailscale_only: "Tailscale only"
+  internal: "Docker network only; no host port"
+
+stacks:
+  bazarr:
+    group: media
+    compose: compose/media/bazarr/compose.yml
+    containers: [bazarr]
+    access: private
+    host_ports: [6767]
+  flaresolverr:
+    group: media
+    compose: compose/media/flaresolverr/compose.yml
+    containers: [flaresolverr]
+    access: internal
+    container_ports: [8191]
+  homeassistant:
+    group: automation
+    compose: compose/automation/homeassistant/compose.yml
+    containers: [homeassistant]
+    access: public_via_vps
+    host_ports: [8123]
+  immich:
+    group: photos
+    compose: compose/photos/immich/compose.yml
+    containers: [immich_server, immich_machine_learning, immich_postgres, immich_redis]
+    access: private
+    host_ports: [2283]
+  jellyfin:
+    group: media
+    compose: compose/media/jellyfin/compose.yml
+    containers: [jellyfin]
+    access: public_via_vps
+    host_ports: [8096]
+  nextcloud:
+    group: cloud
+    compose: compose/cloud/nextcloud/compose.yml
+    containers: [nextcloud-app, nextcloud-db]
+    access: public_via_vps
+    host_ports: [8088]
+  prowlarr:
+    group: media
+    compose: compose/media/prowlarr/compose.yml
+    containers: [prowlarr]
+    access: private
+    host_ports: [9696]
+  qbittorrent:
+    group: media
+    compose: compose/media/qbittorrent/compose.yml
+    containers: [qbittorrent]
+    access: private
+    host_ports: [8080]
+    peer_ports: [6881]
+  radarr:
+    group: media
+    compose: compose/media/radarr/compose.yml
+    containers: [radarr]
+    access: private
+    host_ports: [7878]
+  seerr:
+    group: media
+    compose: compose/media/seerr/compose.yml
+    containers: [seerr]
+    access: public_via_vps
+    host_ports: [5055]
+  sonarr:
+    group: media
+    compose: compose/media/sonarr/compose.yml
+    containers: [sonarr]
+    access: private
+    host_ports: [8989]
+
+native_services:
+  tailscale:
+    role: private_management
+    access: tailscale_only
+  ssh:
+    role: host_administration
+    access: private
+  pi-web-ui:
+    role: approval_gated_ai_administration
+    access: tailscale_only
+  wg-home:
+    role: encrypted_vps_to_home_upstream
+  caddy-vps:
+    role: public_tls_reverse_proxy

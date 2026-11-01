@@ -1,0 +1,9 @@
+[Interface]
+Address = 10.10.0.1/32
+PrivateKey = <VPS_PRIVATE_KEY>
+ListenPort = 51820
+MTU = 1380
+
+[Peer]
+PublicKey = <HOME_PUBLIC_KEY>
+AllowedIPs = 10.10.0.2/32

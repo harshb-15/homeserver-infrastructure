@@ -1,0 +1,27 @@
+[Unit]
+Description=Recover a stale homeserver-to-VPS WireGuard session
+After=network-online.target wg-quick@wg-home.service
+Wants=network-online.target
+ConditionPathExists=/sys/class/net/wg-home
+
+[Service]
+Type=oneshot
+EnvironmentFile=-/etc/default/wg-home-watchdog
+ExecStart=/usr/local/sbin/wg-home-watchdog
+User=root
+Group=root
+Nice=10
+IOSchedulingClass=idle
+ProtectHome=true
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/run
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+LockPersonality=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+SystemCallArchitectures=native
+TimeoutStartSec=45s

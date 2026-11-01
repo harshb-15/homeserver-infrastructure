@@ -1,0 +1,17 @@
+add table inet wg_home_guard
+flush table inet wg_home_guard
+
+table inet wg_home_guard {
+    chain input {
+        type filter hook input priority -10; policy accept;
+        iifname "@WIREGUARD_INTERFACE@" ip saddr @VPS_TUNNEL_IP@ ip daddr @HOME_TUNNEL_IP@ ct state established,related counter accept
+        iifname "@WIREGUARD_INTERFACE@" ip saddr @VPS_TUNNEL_IP@ ip daddr @HOME_TUNNEL_IP@ ip protocol icmp counter accept
+        iifname "@WIREGUARD_INTERFACE@" ip saddr @VPS_TUNNEL_IP@ ip daddr @HOME_TUNNEL_IP@ tcp dport { 5055, 8088, 8096, 8123 } ct state new counter accept
+        iifname "@WIREGUARD_INTERFACE@" counter drop
+    }
+    chain forward {
+        type filter hook forward priority -10; policy accept;
+        iifname "@WIREGUARD_INTERFACE@" ip saddr @VPS_TUNNEL_IP@ meta l4proto tcp ct original ip daddr @HOME_TUNNEL_IP@ ct original proto-dst { 5055, 8088, 8096 } ct state new,established counter accept
+        iifname "@WIREGUARD_INTERFACE@" counter drop
+    }
+}

@@ -1,0 +1,20 @@
+name: sonarr
+services:
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest@sha256:373159ba768e23a3a1c497d9f2b936addf8fd5b1fdce7dd6a14080ac928bfda0
+    container_name: sonarr
+    environment:
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+      TZ: ${TZ:-Etc/UTC}
+    volumes:
+      - ${HOMESERVER_RUNTIME_ROOT:?required}/sonarr/config:/config
+      - ${STORAGE_ROOT:?required}:/data
+    ports: ["8989:8989"]
+    restart: unless-stopped
+    networks: [homeserver]
+    dns: [8.8.8.8, 1.1.1.1]
+networks:
+  homeserver:
+    name: ${HOMESERVER_DOCKER_NETWORK:-homeserver}
+    external: true

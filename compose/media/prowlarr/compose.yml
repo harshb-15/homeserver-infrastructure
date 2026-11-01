@@ -1,0 +1,19 @@
+name: prowlarr
+services:
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest@sha256:1295cff29d10b486c0d8324d1559a552140a5932bf8b3d87e398654414f63f92
+    container_name: prowlarr
+    environment:
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+      TZ: ${TZ:-Etc/UTC}
+    volumes:
+      - ${HOMESERVER_RUNTIME_ROOT:?required}/prowlarr/config:/config
+    ports: ["9696:9696"]
+    restart: unless-stopped
+    networks: [homeserver]
+    dns: [8.8.8.8, 1.1.1.1]
+networks:
+  homeserver:
+    name: ${HOMESERVER_DOCKER_NETWORK:-homeserver}
+    external: true

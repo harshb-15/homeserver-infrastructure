@@ -1,0 +1,22 @@
+name: seerr
+services:
+  seerr:
+    image: ghcr.io/seerr-team/seerr:latest@sha256:f4768de5f616248d723e05891f3345a1402123775d03bf0890dbfedc0831bda1
+    container_name: seerr
+    init: true
+    environment:
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+      LOG_LEVEL: info
+      TZ: ${TZ:-Etc/UTC}
+      PORT: "5055"
+    ports: ["5055:5055"]
+    volumes:
+      - ${HOMESERVER_RUNTIME_ROOT:?required}/seerr/config:/app/config
+    restart: unless-stopped
+    networks: [homeserver]
+    dns: [8.8.8.8, 1.1.1.1]
+networks:
+  homeserver:
+    name: ${HOMESERVER_DOCKER_NETWORK:-homeserver}
+    external: true

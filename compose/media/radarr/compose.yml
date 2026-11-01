@@ -1,0 +1,20 @@
+name: radarr
+services:
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest@sha256:a45b5ab0f850f39edb4cc9c95bbd967b52ddc3d4574a4dfb45561177db6c88f4
+    container_name: radarr
+    environment:
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+      TZ: ${TZ:-Etc/UTC}
+    volumes:
+      - ${HOMESERVER_RUNTIME_ROOT:?required}/radarr/config:/config
+      - ${STORAGE_ROOT:?required}:/data
+    ports: ["7878:7878"]
+    restart: unless-stopped
+    networks: [homeserver]
+    dns: [8.8.8.8, 1.1.1.1]
+networks:
+  homeserver:
+    name: ${HOMESERVER_DOCKER_NETWORK:-homeserver}
+    external: true

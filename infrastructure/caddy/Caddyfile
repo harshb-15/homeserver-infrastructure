@@ -1,0 +1,60 @@
+{
+	admin 127.0.0.1:2019
+	servers {
+		protocols h1 h2
+	}
+}
+
+(jellyfin_backend) {
+	header -Server
+	reverse_proxy {$HOME_TUNNEL_IP}:8096 {
+		transport http {
+			dial_timeout 5s
+		}
+	}
+}
+
+(seerr_backend) {
+	header -Server
+	reverse_proxy {$HOME_TUNNEL_IP}:5055 {
+		header_up -X-Real-IP
+		header_up -Forwarded
+		transport http {
+			dial_timeout 5s
+		}
+	}
+}
+
+(homeassistant_backend) {
+	header -Server
+	reverse_proxy {$HOME_TUNNEL_IP}:8123 {
+		header_up -X-Real-IP
+		header_up -Forwarded
+		transport http {
+			dial_timeout 5s
+		}
+	}
+}
+
+(nextcloud_backend) {
+	header {
+		-Server
+		Strict-Transport-Security "max-age=15552000"
+	}
+	redir /.well-known/carddav /remote.php/dav/ 301
+	redir /.well-known/caldav /remote.php/dav/ 301
+	reverse_proxy {$HOME_TUNNEL_IP}:8088 {
+		header_up -X-Real-IP
+		header_up -Forwarded
+		transport http {
+			dial_timeout 5s
+		}
+	}
+}
+
+http://{$VPS_PUBLIC_IP} {
+	respond /gateway-health "VPS gateway is reachable." 200
+	respond "Not found" 404
+}
+
+import sites-enabled/*.caddy

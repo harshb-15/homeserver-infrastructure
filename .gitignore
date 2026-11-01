@@ -1,0 +1,47 @@
+# Secrets and private environment
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+id_ed25519*
+id_rsa*
+**/.secrets/
+**/secrets.yaml
+
+# Runtime/application state
+runtime/
+private/
+generated/
+**/config/
+**/data/
+**/db/
+**/postgres/
+**/*-state/
+**/tailscaled.state
+*.db
+*.sqlite*
+*.sql*
+*.log*
+
+# Backups and generated archives
+backups/
+*.tar
+*.tar.*
+*.zst
+
+# Tool/editor artifacts
+.DS_Store
+.vscode/
+.idea/
+**/__pycache__/
+*.swp
+*.tmp
+
+# Deployment is enabled only after Point 5 validation/cutover.
+inventory/deployment-enabled

@@ -1,0 +1,35 @@
+name: nextcloud
+services:
+  db:
+    image: mariadb:10.6@sha256:92e50059ea0a5965a33ef751970eab37d421b91ebbd01ac909039cffe159e574
+    container_name: nextcloud-db
+    command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
+    volumes:
+      - ${HOMESERVER_RUNTIME_ROOT:?required}/nextcloud/db:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${NEXTCLOUD_DB_ROOT_PASSWORD:?required}
+      MYSQL_PASSWORD: ${NEXTCLOUD_DB_PASSWORD:?required}
+      MYSQL_DATABASE: nextcloud
+      MYSQL_USER: nextcloud
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+      TZ: ${TZ:-Etc/UTC}
+    restart: unless-stopped
+  app:
+    image: nextcloud:apache@sha256:368cd1c75bc4a32c2aee8a119cae31bcebff80c374782f404c440c3295726814
+    container_name: nextcloud-app
+    ports: ["8088:80"]
+    volumes:
+      - ${HOMESERVER_RUNTIME_ROOT:?required}/nextcloud/nextcloud_data:/var/www/html
+      - ${STORAGE_ROOT:?required}/nextcloud:/var/www/html/data
+    environment:
+      MYSQL_PASSWORD: ${NEXTCLOUD_DB_PASSWORD:?required}
+      MYSQL_DATABASE: nextcloud
+      MYSQL_USER: nextcloud
+      MYSQL_HOST: db
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+      TZ: ${TZ:-Etc/UTC}
+      APACHE_DISABLE_REWRITE_IP: "1"
+    depends_on: [db]
+    restart: unless-stopped

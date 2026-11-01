@@ -1,0 +1,16 @@
+name: homeassistant
+services:
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable@sha256:14931c6b13756317849f46da1d01b45937a1150db66c081cfe529d48215943fe
+    container_name: homeassistant
+    environment:
+      TZ: ${TZ:-Etc/UTC}
+    volumes:
+      - ${HOMESERVER_RUNTIME_ROOT:?required}/homeassistant/config:/config
+      - /etc/localtime:/etc/localtime:ro
+      - /run/dbus:/run/dbus:ro
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+    cap_add: [NET_ADMIN, NET_RAW]
+    dns: [8.8.8.8, 1.1.1.1]

@@ -1,0 +1,3 @@
+{$JELLYFIN_HOSTNAME} {
+	import jellyfin_backend
+}

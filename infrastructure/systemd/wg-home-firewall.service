@@ -1,0 +1,13 @@
+[Unit]
+Description=Restrict the WireGuard VPS peer to approved homeserver services
+After=nftables.service ufw.service firewalld.service docker.service
+Before=wg-quick@wg-home.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/nft --file /etc/nftables.d/wg-home-guard.nft
+ExecReload=/usr/sbin/nft --file /etc/nftables.d/wg-home-guard.nft
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,8 @@
+network:
+  version: 2
+  ethernets:
+    @LAN_INTERFACE@:
+      dhcp4: true
+      match:
+        macaddress: "@LAN_MAC@"
+      set-name: "@LAN_INTERFACE@"

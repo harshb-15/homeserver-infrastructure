@@ -1,0 +1,22 @@
+name: jellyfin
+services:
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest@sha256:b8dcc7b71d0ea872b74314da4b995c0cf282b1778438c295996e7be88c70fdda
+    container_name: jellyfin
+    environment:
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+      TZ: ${TZ:-Etc/UTC}
+    devices: [nvidia.com/gpu=all]
+    volumes:
+      - ${HOMESERVER_RUNTIME_ROOT:?required}/jellyfin/config:/config
+      - ${STORAGE_ROOT:?required}/movies:/data/movies
+      - ${STORAGE_ROOT:?required}/tvshows:/data/tvshows
+    ports: ["8096:8096"]
+    restart: unless-stopped
+    networks: [homeserver]
+    dns: [8.8.8.8, 1.1.1.1]
+networks:
+  homeserver:
+    name: ${HOMESERVER_DOCKER_NETWORK:-homeserver}
+    external: true

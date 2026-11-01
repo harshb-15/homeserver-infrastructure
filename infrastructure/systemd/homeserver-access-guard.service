@@ -1,0 +1,16 @@
+[Unit]
+Description=Restrict homeserver application and SSH access before Docker DNAT
+DefaultDependencies=no
+Wants=network-pre.target
+After=local-fs.target systemd-modules-load.service nftables.service ufw.service
+Before=network-pre.target docker.service ssh.service ssh.socket shutdown.target
+Conflicts=shutdown.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/nft --file /etc/nftables.d/homeserver-access-guard.nft
+ExecReload=/usr/sbin/nft --file /etc/nftables.d/homeserver-access-guard.nft
+
+[Install]
+WantedBy=sysinit.target

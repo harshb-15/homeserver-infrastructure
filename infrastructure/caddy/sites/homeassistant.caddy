@@ -1,0 +1,3 @@
+{$HOMEASSISTANT_HOSTNAME} {
+	import homeassistant_backend
+}

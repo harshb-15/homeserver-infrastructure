@@ -1,0 +1,20 @@
+schema_version: 1
+hosts:
+  homeserver:
+    role: application_and_storage_host
+    operating_system: Ubuntu 26.04 LTS
+    architecture: amd64
+    container_runtime: Docker Engine with Compose plugin
+    accelerator: NVIDIA GTX 1050
+    primary_network: Ethernet with router-reserved DHCP address
+    remote_management: native Tailscale plus OpenSSH
+    storage:
+      system: NVMe with LVM/ext4
+      bulk: single ext4 HDD
+      redundancy: none
+  vps_gateway:
+    role: public_https_and_wireguard_gateway
+    operating_system: Ubuntu 24.04 LTS
+    architecture: arm64
+    edge_proxy: Caddy
+    tunnel: WireGuard

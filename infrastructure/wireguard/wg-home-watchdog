@@ -1,0 +1,30 @@
+#!/bin/bash
+set -u
+interface=${WG_INTERFACE:-wg-home}
+peer_ip=${WG_PEER_IP:-10.10.0.1}
+max_age=${WG_MAX_HANDSHAKE_AGE:-180}
+cooldown=${WG_RESTART_COOLDOWN:-300}
+state_file=/run/wg-home-watchdog.last-restart
+lock_file=/run/wg-home-watchdog.lock
+tag=wg-home-watchdog
+log() { logger -t "$tag" -- "$*"; printf '%s\n' "$*"; }
+is_uint() { [[ $1 =~ ^[0-9]+$ ]]; }
+if ! is_uint "$max_age" || ! is_uint "$cooldown"; then log "Invalid numeric watchdog configuration; refusing to act."; exit 0; fi
+if ! systemctl is-active --quiet "wg-quick@${interface}.service" || [[ ! -e /sys/class/net/${interface} ]]; then log "${interface} is inactive or absent; watchdog will not start it."; exit 0; fi
+exec 9>"$lock_file"; flock -n 9 || exit 0
+probe() { ping -I "$interface" -n -q -c 2 -W 2 "$peer_ip" >/dev/null 2>&1; }
+probe && exit 0
+now=$(date +%s)
+handshake=$(wg show "$interface" latest-handshakes 2>/dev/null | awk 'NR == 1 { print $2 }')
+handshake=${handshake:-0}; is_uint "$handshake" || handshake=0
+age=$((now-handshake))
+if [[ $handshake -gt 0 && $age -lt $max_age ]]; then log "Tunnel probe failed, but latest handshake is only ${age}s old; not restarting."; exit 0; fi
+last_restart=0
+if [[ -r $state_file ]]; then read -r last_restart < "$state_file" || last_restart=0; is_uint "$last_restart" || last_restart=0; fi
+since_restart=$((now-last_restart))
+if [[ $last_restart -gt 0 && $since_restart -lt $cooldown ]]; then log "Tunnel remains unreachable; restart cooldown active (${since_restart}s/${cooldown}s)."; exit 0; fi
+printf '%s\n' "$now" > "$state_file"; chmod 600 "$state_file"
+log "Tunnel probe failed and handshake is stale (${age}s); restarting only wg-quick@${interface}."
+if ! systemctl restart "wg-quick@${interface}.service"; then log "WireGuard restart failed; timer will retry after cooldown."; exit 0; fi
+for _ in 1 2 3 4 5; do sleep 2; if probe; then new_handshake=$(wg show "$interface" latest-handshakes 2>/dev/null | awk 'NR == 1 { print $2 }'); log "Tunnel recovered; fresh handshake timestamp ${new_handshake:-unknown}."; exit 0; fi; done
+log "WireGuard restarted but tunnel probe still fails; timer will retry after cooldown."

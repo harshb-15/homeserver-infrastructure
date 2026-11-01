@@ -1,0 +1,33 @@
+# Render uppercase placeholders before installation. Own table only: never flush
+# Docker, Tailscale, UFW or WireGuard rules.
+add table inet homeserver_access_guard
+flush table inet homeserver_access_guard
+
+table inet homeserver_access_guard {
+    set protected_tcp_ports {
+        type inet_service
+        elements = { 22, 2283, 5055, 6767, 7878, 8080, 8088, 8096,
+                     8123, 8191, 8787, 8989, 9696, 18554, 18555 }
+    }
+    chain prerouting {
+        type filter hook prerouting priority -150; policy accept;
+        fib daddr type local tcp dport @protected_tcp_ports jump service_access
+        fib daddr type local udp dport 18555 jump service_access
+    }
+    chain service_access {
+        ct direction reply counter accept
+        iifname "lo" counter accept
+        tcp dport 8191 iifname "br-*" ip saddr 172.16.0.0/12 counter accept
+        tcp dport { 8191, 18554 } counter drop
+        tcp dport 8787 iifname "tailscale0" counter accept
+        tcp dport 8787 counter drop
+        iifname "tailscale0" counter accept
+        iifname "@LAN_INTERFACE@" ip saddr @LAN_CIDR@ counter accept
+        iifname "@LAN_INTERFACE@" ip6 saddr fe80::/10 ip6 daddr fe80::/10 counter accept
+        tcp dport 22 counter drop
+        iifname "br-*" ip saddr 172.16.0.0/12 counter accept
+        iifname "docker0" ip saddr 172.16.0.0/12 counter accept
+        iifname "@WIREGUARD_INTERFACE@" ip saddr @VPS_TUNNEL_IP@ ip daddr @HOME_TUNNEL_IP@ tcp dport { 5055, 8088, 8096, 8123 } counter accept
+        counter drop
+    }
+}

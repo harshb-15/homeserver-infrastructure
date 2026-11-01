@@ -1,0 +1,3 @@
+{$SEERR_HOSTNAME} {
+	import seerr_backend
+}

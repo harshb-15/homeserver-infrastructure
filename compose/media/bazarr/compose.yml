@@ -1,0 +1,21 @@
+name: bazarr
+services:
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest@sha256:e464484e7e6cff8ee189036c9ba96977ab054104ea18067ecf6171d0f3f3f8f2
+    container_name: bazarr
+    environment:
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+      TZ: ${TZ:-Etc/UTC}
+    volumes:
+      - ${HOMESERVER_RUNTIME_ROOT:?required}/bazarr/config:/config
+      - ${STORAGE_ROOT:?required}:/data
+    ports:
+      - "6767:6767"
+    restart: unless-stopped
+    networks: [homeserver]
+    dns: [8.8.8.8, 1.1.1.1]
+networks:
+  homeserver:
+    name: ${HOMESERVER_DOCKER_NETWORK:-homeserver}
+    external: true
