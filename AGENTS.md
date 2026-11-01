@@ -49,8 +49,23 @@ for a personal homeserver. Treat every tracked file as potentially public.
   service, or performing broad upgrades.
 - Create a timestamped private backup before database, credential, network, firewall
   or substantial service changes, and verify recovery artifacts.
-- Do not initialize Git in the runtime deployment tree and do not add a remote or
-  commit until the publication checklist reaches the relevant reviewed step.
+- Do not initialize Git in the runtime deployment tree.
+
+## GitHub operations
+
+The host may have persistent GitHub CLI authentication with access to multiple
+repositories. Treat it as a broad credential:
+
+- Never print/export the token or read credential storage into model context.
+- A user request to implement and publish a scoped repository change authorizes a
+  normal commit and push for that task after validation; otherwise ask first.
+- Pull with fast-forward-only behavior and inspect divergence before reconciling.
+- Never force-push, rewrite published history, delete repositories/branches/tags,
+  change visibility, transfer ownership, manage account/org access, or merge a pull
+  request without explicit approval for that exact action.
+- Do not commit generated secrets, workflow credentials or private runtime values.
+- Run repository secret/history checks before the first push of a new repository
+  and after any suspected credential exposure.
 
 ## Documentation expectations
 
